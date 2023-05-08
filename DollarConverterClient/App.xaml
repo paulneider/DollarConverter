@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:DollarConverterClient"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <local:StringToDoubleConverter x:Key="StringToDoubleConverter"/>
     </Application.Resources>
 </Application>

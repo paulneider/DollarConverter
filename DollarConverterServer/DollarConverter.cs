@@ -50,7 +50,7 @@ static class DollarConverter
         }
 
         double cents = valueWithOutThousands - quantity;
-        int centQuantity = (int)(cents * 100);
+        int centQuantity = (int)Math.Round(cents * 100);
         if (centQuantity > 1)
         {
             numerals.Add("and");

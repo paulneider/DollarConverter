@@ -14,4 +14,10 @@
   <ItemGroup>
     <ProjectReference Include="..\GprcConverterClient\GprcConverterClient.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

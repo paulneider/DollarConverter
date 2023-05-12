@@ -1,12 +1,17 @@
 ﻿using Grpc.Net.Client;
 using GrpcConverter;
 using System;
+using System.Configuration;
+using System.DirectoryServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace DollarConverterClient;
 
 internal class MainViewModel : ViewModelBase
 {
+    private readonly GrpcChannel channel;
+
     private double input;
     public double Input
     {
@@ -27,37 +32,72 @@ internal class MainViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
+    private bool isEnabled = true;
+    public bool IsEnabled
+    {
+        get => isEnabled;
+        set
+        {
+            isEnabled = value;
+            OnPropertyChanged();
+        }
+    }
     public Command ConvertCommand { get; init; }
-    private readonly GrpcChannel channel;
-    bool canConvert = true;
+    public string? ServerAddress { get; init; }
+
     public MainViewModel()
     {
-        channel = GrpcChannel.ForAddress("http://localhost:5000");
+        ServerAddress = ConfigurationManager.AppSettings.Get("ServerAddress");
         ConvertCommand = new Command(Convert, CanConvert);
+        
+        try
+        {
+            channel = GrpcChannel.ForAddress(ServerAddress);
+        }
+        catch (Exception)
+        {
+            IsEnabled = false;
+            Output = "ERROR: The set server URL is not valid.";
+        }
     }
 
     private async void Convert(object? param)
     {
+        await ConvertAsync();
+    }
+    private async Task ConvertAsync()
+    {
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
-            canConvert = false;
+            IsEnabled = false;
             ConvertCommand.NotifyCanExecutedChanged();
 
             Converter.ConverterClient client = new Converter.ConverterClient(channel);
             ConvertReply reply = await client.ConvertDollarAsync(new ConvertRequest { Value = Input });
-
+            
             Output = reply.Message;
+        }
+        catch(Exception ex)
+        {
+            if (ex is Grpc.Core.RpcException)
+            {
+                Output = "ERROR: Unable to connect to server.";
+            }
+            else
+            {
+                Output = "ERROR: " + ex.ToString();
+            }
         }
         finally
         {
             Mouse.OverrideCursor = null;
-            canConvert = true;
+            IsEnabled = true;
             ConvertCommand.NotifyCanExecutedChanged();
         }
     }
     private bool CanConvert(object? param)
     {
-        return canConvert;
+        return IsEnabled;
     }
 }

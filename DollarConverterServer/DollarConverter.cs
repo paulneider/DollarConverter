@@ -7,12 +7,13 @@ static class DollarConverter
         if (value < 0 || value > 999_999_999.99)
             return "Unsupported input.";
 
-        string numeral = string.Empty;
+        List<string> numerals = new List<string>();
 
         int millionsQuantity = (int)Math.Floor(value / 1_000_000);
         if (millionsQuantity > 0)
         {
-            numeral = $"{GetNumeral1To999(millionsQuantity)} million";
+            numerals.AddRange(GetNumerals1To999(millionsQuantity));
+            numerals.Add("million");
         }
 
         int millions = millionsQuantity * 1_000_000;
@@ -20,7 +21,8 @@ static class DollarConverter
         int thousandsQuantity = (int)Math.Floor(valueWithOutMillions / 1_000);
         if (thousandsQuantity > 0)
         {
-            numeral = numeral.AddSpaceIfNotEmpty() + $"{GetNumeral1To999(thousandsQuantity)} thousand";
+            numerals.AddRange(GetNumerals1To999(thousandsQuantity));
+            numerals.Add("thousand");
         }
 
         int thousands = thousandsQuantity * 1_000;
@@ -28,78 +30,86 @@ static class DollarConverter
         int quantity = (int)Math.Floor(valueWithOutThousands);
         if (quantity > 0)
         {
-            if (quantity == 1 && string.IsNullOrEmpty(numeral))
+            if (quantity == 1 && !numerals.Any())
             {
-                numeral = "one dollar";
+                numerals.Add("one dollar");
             }
             else
             {
-                numeral = numeral.AddSpaceIfNotEmpty() + $"{GetNumeral1To999(quantity)} dollars";
+                numerals.AddRange(GetNumerals1To999(quantity));
+                numerals.Add("dollars");
             }
         }
-        else if (string.IsNullOrEmpty(numeral))
+        else if (numerals.Any())
         {
-            numeral = "zero dollars";
+            numerals.Add("dollars");
         }
         else
         {
-            numeral += " dollars";
+            numerals.Add("zero dollars");
         }
 
         double cents = valueWithOutThousands - quantity;
         int centQuantity = (int)(cents * 100);
         if (centQuantity > 1)
         {
-            numeral = numeral.AddSpaceIfNotEmpty() + $"and {GetNumeral1To999(centQuantity)} cents";
+            numerals.Add("and");
+            numerals.AddRange(GetNumerals1To999(centQuantity));
+            numerals.Add("cents");
         }
         else if (centQuantity == 1)
         {
-            numeral = numeral.AddSpaceIfNotEmpty() + "and one cent";
+            numerals.Add("and one cent");
         }
 
-        return numeral;
+        return string.Join(" ", numerals);
     }
-    static string GetNumeral1To999(int value)
+    static IEnumerable<string> GetNumerals1To999(int value)
     {
         if (value < 1 || value > 999)
             throw new ArgumentOutOfRangeException(nameof(value), value, "Value must be between 1 and 999.");
 
-        string numeral = string.Empty;
+        List<string> numerals = new List<string>();
 
         int hundredQuantity = (int)Math.Floor((double)value / 100);
         if (hundredQuantity > 0)
         {
-            numeral = $"{GetNumeral1To9(hundredQuantity)} hundred";
+            numerals.Add(GetNumeral1To9(hundredQuantity));
+            numerals.Add("hundred");
         }
 
         int hundred = hundredQuantity * 100;
         int inputWithOutHundred = value - hundred;
         if (inputWithOutHundred == 0)
-            return numeral;
+            return numerals;
 
         int tensQuantity = (int)Math.Floor((double)inputWithOutHundred / 10);
         if (inputWithOutHundred < 10)
         {
             // 1 - 9
-            numeral = numeral.AddSpaceIfNotEmpty() + GetNumeral1To9(inputWithOutHundred);
+            numerals.Add(GetNumeral1To9(inputWithOutHundred));
         }
         else if (inputWithOutHundred > 10 && inputWithOutHundred < 20)
         {
             // 11 - 19
-            numeral = numeral.AddSpaceIfNotEmpty() + GetNumeral11To19(inputWithOutHundred);
+            numerals.Add(GetNumeral11To19(inputWithOutHundred));
         }
         else
         {
             // 10 & 20 - 99
-            numeral = numeral.AddSpaceIfNotEmpty() + GetTensNumeral(tensQuantity);
+            string tensNumeral = GetTensNumeral(tensQuantity);
 
             int tens = tensQuantity * 10;
             int inputWithOutTens = inputWithOutHundred - tens;
             if (inputWithOutTens <= 9 && inputWithOutTens >= 1)
-                numeral += $"-{GetNumeral1To9(inputWithOutTens)}";
+            {
+                tensNumeral += $"-{GetNumeral1To9(inputWithOutTens)}";
+            }
+
+            numerals.Add(tensNumeral);
         }
 
-        return numeral;
+        return numerals;
     }
     static string GetNumeral1To9(int value) =>
         value switch
@@ -143,8 +153,4 @@ static class DollarConverter
             9 => "ninety",
             _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Value must be between 1 and 9.")
         };
-    static string AddSpaceIfNotEmpty(this string value)
-    {
-        return string.IsNullOrEmpty(value) ? value : value + " ";
-    }
 }

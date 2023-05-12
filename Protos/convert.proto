@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcConverter";
+
+package convert;
+
+service Converter {
+  rpc ConvertDollar (ConvertRequest) returns (ConvertReply);
+}
+
+message ConvertRequest {
+  double value = 1;
+}
+
+message ConvertReply {
+  string message = 1;
+}

@@ -11,4 +11,7 @@
     <Folder Include="Views\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GprcConverterClient\GprcConverterClient.csproj" />
+  </ItemGroup>
 </Project>

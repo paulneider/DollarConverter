@@ -9,7 +9,7 @@ abstract class ViewModelBase : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -18,24 +18,27 @@ abstract class ViewModelBase : INotifyPropertyChanged
     {
         public event EventHandler? CanExecuteChanged;
 
-        private readonly Predicate<object> canExecute;
-        private readonly Action<object> execute;
+        private readonly Predicate<object?>? canExecute;
+        private readonly Action<object?> execute;
 
-        public Command(Action<object> execute) : this(execute, null) { }
-        public Command(Action<object> execute, Predicate<object> canExecute)
+        public Command(Action<object?> execute)
+        {
+            this.execute = execute;
+        }
+        public Command(Action<object?> execute, Predicate<object?> canExecute)
         {
             this.execute = execute;
             this.canExecute = canExecute;
         }
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             return canExecute?.Invoke(parameter) ?? true;
         }
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
             execute?.Invoke(parameter);
         }
-        public void RaiseCanExecuteChanged()
+        public void NotifyCanExecutedChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }

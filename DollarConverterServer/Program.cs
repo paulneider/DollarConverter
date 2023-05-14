@@ -8,7 +8,6 @@ builder.Services.AddGrpc();
 
 var app = builder.Build();
 
-app.MapGet("/", () => "DollarConverterServer running!");
 app.MapGrpcService<ConverterService>();
 
 app.Run();

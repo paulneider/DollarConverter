@@ -39,7 +39,7 @@
                    Height="20"
                    Margin="5"
                    FontSize="14"
-                   ToolTip="The URL of the server is set in the file App.config."
+                   ToolTip="The URL of the server is set in the file DollarConverterClient.dll.config."
                    Text="{Binding ServerAddress}"/>
         
         <Label Grid.Row="1"
